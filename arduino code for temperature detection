@@ -1,0 +1,59 @@
+#include <Wire.h>
+#include <Adafruit_MLX90614.h>
+#include <Servo.h>
+
+
+Adafruit_MLX90614 mlx = Adafruit_MLX90614();
+
+
+int ledPin = 13;
+int pirPin = 2;                 
+int pirStat = 0;
+int buzzer = 9;
+int v = 0;
+int pump=10;
+Servo servo1;
+Servo servo2;
+
+void setup() {
+  mlx.begin();
+ 
+  pinMode(pirPin, INPUT); 
+  pinMode(buzzer, OUTPUT);
+  servo1.attach(3);
+  servo2.attach(5);
+}
+
+void loop() {
+if (Serial.available() > 0) {
+    v = Serial.read();
+}
+pirStat = digitalRead(pirPin); 
+   
+if (pirStat == HIGH)
+{
+digitalWrite(pump, HIGH);
+delay(2000);
+digitalWrite(pump, LOW); 
+delay(1000);
+}
+if(mlx.readObjectTempC() > 36.1 && mlx.readObjectTempC() < 37.2 && v>0){
+for (int i = 0; i < 120; i++) {
+    servo1.write(i);             
+    servo2.write(i);           
+    delay(10);                     
+  }
+  delay(5000);
+  for (int i = 120; i > 0; i--) {
+    servo1.write(i);               
+    servo2.write(i); 
+    delay(10);                           
+  }
+}else{
+  tone(buzzer, 1000);
+  digitalWrite(ledPin, 1);
+  delay(2000);
+  noTone(buzzer);  
+  digitalWrite(ledPin, 0);
+}
+}
